@@ -136,9 +136,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="TestSystemSample.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MyMath.hpp" />
+    <ClInclude Include="System.hpp" />
+    <ClInclude Include="TestSystem.hpp" />
+    <ClInclude Include="TestSystemSample.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
