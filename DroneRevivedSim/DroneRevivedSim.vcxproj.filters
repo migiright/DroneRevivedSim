@@ -21,6 +21,9 @@
     <ClCompile Include="TestSystemSample.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="MatlabUtilitySample.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MyMath.hpp">
@@ -39,6 +42,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Algorithms.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MatlabUtility.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MatlabUtilitySample.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

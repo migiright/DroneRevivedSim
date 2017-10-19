@@ -136,10 +136,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="MatlabUtilitySample.cpp" />
     <ClCompile Include="TestSystemSample.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Algorithms.hpp" />
+    <ClInclude Include="MatlabUtility.hpp" />
+    <ClInclude Include="MatlabUtilitySample.h" />
     <ClInclude Include="MyMath.hpp" />
     <ClInclude Include="Simulator.hpp" />
     <ClInclude Include="System.hpp" />
