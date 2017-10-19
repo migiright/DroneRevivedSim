@@ -1,6 +1,6 @@
 ﻿/**
 * \file MyMath.hpp
-* \version 1.2
+* \version 1.3.1
 */
 
 #pragma once
@@ -230,6 +230,75 @@ double dot(const Vector<Dimension> &lhs, const Vector<Dimension> &rhs) {
 	double ret = 0;
 	for (size_t i = 0; i < Dimension; i++) {
 		ret += lhs[i] * rhs[i];
+	}
+	return ret;
+}
+
+/// ノルム
+template<size_t Dimension>
+double norm(const Vector<Dimension> x)
+{
+	double ret = 0;
+	for (size_t i = 0; i < Dimension; i++) {
+		ret += x[i]*x[i];
+	}
+	return sqrt(ret);
+}
+
+/// ノルム
+inline double norm(double x)
+{
+	return x;
+}
+
+/// 1変数関数の微分
+template<class Function>
+auto differential(Function function, double variable)
+{
+	double h = 1e-6;
+	decltype(function(variable)) d;
+	for (size_t i = 0; i < 10; i++) {
+		auto f0 = function(variable - h);
+		d = function(variable + h) - f0;
+		int n;
+		frexp(norm(f0) / norm(d), &n);
+		if (20 <= n && n <= 22) return d / (2*h);
+		h = ldexp(h, n - 21);
+	}
+	std::cout << "differential not converged" << std::endl;
+	return d / (2*h);
+}
+
+/// ベクトル値関数のヤコビ行列
+template<size_t VariableDimension, class Function>
+auto jacobianMatrix(Function function, Vector<VariableDimension> variable)
+{
+	constexpr size_t FunctionDimension = decltype(function(variable))::Dimension;
+	Matrix<FunctionDimension, VariableDimension> ret;
+	for (size_t i = 0; i < VariableDimension; i++) {
+		auto r = differential([&](double x) {
+			auto v = variable;
+			v[i] = x;
+			return function(v);
+		}, variable[i]);
+		for (size_t j = 0; j < FunctionDimension; j++) {
+			ret(j, i) = r[j];
+		}
+	}
+	return ret;
+}
+
+///　スカラ値関数のヤコビ行列
+template<size_t VariableDimension, class Function>
+auto jacobianVector(Function function, Vector<VariableDimension> variable)
+{
+	Vector<VariableDimension> ret;
+	for (size_t i = 0; i < VariableDimension; i++) {
+		ret[i] = differential([&](double x) {
+			auto v = variable;
+			v[i] = x;
+			return function(v);
+		}, variable[i]);
 	}
 	return ret;
 }
