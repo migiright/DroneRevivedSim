@@ -1,6 +1,6 @@
 ﻿/**
 * \file MyMath.hpp
-* \version 1.1
+* \version 1.2
 */
 
 #pragma once
@@ -11,6 +11,9 @@
 
 namespace MyMath {
 
+/// すべての Matrix のベースクラス。std::is_base_of とかで使う。
+class MatrixBase {};
+
 /**
 * @brief 行列 
 * @tparam H 行数
@@ -18,7 +21,8 @@ namespace MyMath {
 */
 template<size_t H, size_t W>
 class Matrix
-	: boost::multipliable<Matrix<H, W>, double>
+	: MatrixBase
+	, boost::multipliable<Matrix<H, W>, double>
 {
 public:
 	constexpr static size_t Height = H; ///< 行数
@@ -105,13 +109,17 @@ Matrix<AnsHright, AnsWidth> operator*(
 }
 
 
+/// すべての Vector のベースクラス。std::is_base_of とかで使う。
+struct VectorBase {};
+
 /**
 * \brief ベクトル
 * \tparam D 次元
 */
 template<size_t D>
 struct Vector
-	: boost::addable<Vector<D>>
+	: VectorBase
+	, boost::addable<Vector<D>>
 	, boost::subtractable<Vector<D>>
 	, boost::multipliable<Vector<D>, double>
 	, boost::dividable<Vector<D>, double>
@@ -190,7 +198,7 @@ struct Vector
 
 /// 行列*縦ベクトルの乗算
 template<size_t LhsHeight, size_t LhsWidth>
-Vector<LhsHeight> operator*(Matrix<LhsHeight, LhsWidth> lhs, Vector<LhsWidth> rhs)
+Vector<LhsHeight> operator*(const Matrix<LhsHeight, LhsWidth> &lhs, const Vector<LhsWidth> &rhs)
 {
 	Vector<LhsHeight> ret;
 	for (size_t i = 0; i < LhsHeight; i++) {
@@ -204,7 +212,7 @@ Vector<LhsHeight> operator*(Matrix<LhsHeight, LhsWidth> lhs, Vector<LhsWidth> rh
 
 /// 横ベクトル*行列の乗算
 template<size_t LhsHeight, size_t LhsWidth>
-Vector<LhsWidth> operator*(Vector<LhsHeight> lhs, Matrix<LhsHeight, LhsWidth> rhs)
+Vector<LhsWidth> operator*(const Vector<LhsHeight> &lhs, const Matrix<LhsHeight, LhsWidth> &rhs)
 {
 	Vector<LhsWidth> ret;
 	for (size_t i = 0; i < LhsWidth; i++) {
@@ -218,7 +226,7 @@ Vector<LhsWidth> operator*(Vector<LhsHeight> lhs, Matrix<LhsHeight, LhsWidth> rh
 
 /// ベクトル同士の内積
 template<size_t Dimension>
-double dot(Vector<Dimension> lhs, Vector<Dimension> rhs) {
+double dot(const Vector<Dimension> &lhs, const Vector<Dimension> &rhs) {
 	double ret = 0;
 	for (size_t i = 0; i < Dimension; i++) {
 		ret += lhs[i] * rhs[i];
