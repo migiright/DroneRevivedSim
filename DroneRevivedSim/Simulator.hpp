@@ -31,6 +31,7 @@ public:
 
 	void simulateStep();
 	void simulateTo(double time);
+	void simulateToConverge(double error);
 	const Data &data() const;
 
 private:
@@ -61,6 +62,19 @@ void Simulator<System>::simulateTo(double time) {
 	while(data_.back().time < time) {
 		simulateStep();
 	}
+}
+
+template<class System>
+void Simulator<System>::simulateToConverge(double error) {
+	if (std::size(data_) <= 1) simulateStep();
+	auto c = data_.back();
+	auto p = *std::prev(std::prev(data_.end()));
+	while(MyMath::norm((c.state - p.state)/(c.time - p.time)) > error) {
+		p = data_.back();
+		simulateStep();
+		c = data_.back();
+	}
+	auto e = (c.state - p.state)/(c.time - p.time);
 }
 
 template<class System>
