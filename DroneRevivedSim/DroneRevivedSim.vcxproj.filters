@@ -35,5 +35,11 @@
     <ClInclude Include="TestSystemSample.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Simulator.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Algorithms.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

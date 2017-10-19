@@ -139,7 +139,9 @@
     <ClCompile Include="TestSystemSample.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Algorithms.hpp" />
     <ClInclude Include="MyMath.hpp" />
+    <ClInclude Include="Simulator.hpp" />
     <ClInclude Include="System.hpp" />
     <ClInclude Include="TestSystem.hpp" />
     <ClInclude Include="TestSystemSample.h" />
