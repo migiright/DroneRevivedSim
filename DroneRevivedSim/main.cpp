@@ -3,11 +3,25 @@
 #include "Math2.hpp"
 
 using namespace std;
+using namespace MyMath;
+
+double v(Vector<3> x)
+{
+	return x[0] * x[1]*x[1] * x[2]*x[2]*x[2];
+}
+
+auto f(Vector<3> x)
+{
+	return Vector<3>{x[0], x[1], x[2]};
+}
+
+auto g(Vector<3> x)
+{
+	return Matrix<3, 2>{x[0], x[1], x[1], x[2], x[2], x[0]};
+}
 
 int main() {
-	auto t = calcMinimum([](const MyMath::Vector<2> &x) { return sin(x[0])*cos(x[1]); }, MyMath::Vector<2>{1.0, 1.0});
-	MyMath::Vector<2> x = std::get<0>(t);
-	double v = std::get<1>(t);
-	printf("%.20e, %.20e, %.20e\n", x[0], x[1], v);
+	cout << lie(f, v, Vector<3>{2.0, 3.0, 5.0}) << endl;
+	cout << lie(g, v, Vector<3>{2.0, 3.0, 5.0}).toString() << endl;
 	return 0;
 }
