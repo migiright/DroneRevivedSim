@@ -21,6 +21,10 @@ public:
 template<size_t StateD, size_t InputD>
 class CommonSystem : public System<StateD, InputD> {
 public:
+	using System = System<StateD, InputD>;
+	using typename System::State;
+	using typename System::Input;
+
 	CommonSystem(
 		std::function<State(const State&, const Input&)> f,
 		std::function<Input(const State&)> u,
