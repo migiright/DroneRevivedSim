@@ -26,7 +26,7 @@ template<class ValueRange>
 void MatlabUtility::plot(const std::string &csvFileName, const std::string &title, ValueRange valueRange)
 {
 	using namespace std;
-	using V = boost::range_value<ValueRange>::type;
+	using V = typename boost::range_value<ValueRange>::type;
 	static_assert(is_base_of_v<MyMath::VectorBase, typename boost::range_value<ValueRange>::type>,
 		"valueRange is not Range of MyMath::Vector.");
 
