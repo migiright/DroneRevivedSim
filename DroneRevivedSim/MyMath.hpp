@@ -6,6 +6,7 @@
 #pragma once
 
 #include <array>
+#include <iostream>
 #include <boost/format.hpp>
 #include <boost/operators.hpp>
 
