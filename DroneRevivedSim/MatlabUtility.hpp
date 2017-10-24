@@ -32,7 +32,7 @@ void MatlabUtility::plot(const std::string &csvFileName, const std::string &titl
 
 	{
 		ofstream csvFile(csvFileName, ios::trunc);
-		for (auto &v : valueRange) {
+		for (const auto &v : valueRange) {
 			csvFile << v[0];
 			for (size_t i = 1; i < V::Dimension; i++) {
 				csvFile << "," << v[i];
