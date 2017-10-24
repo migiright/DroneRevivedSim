@@ -7,6 +7,8 @@
 #include "Simulator.hpp"
 #include "Algorithms.hpp"
 
+constexpr double Pi = 3.14159265358979323846;
+
 template<size_t Dimension>
 MyMath::Vector<Dimension> operator-(MyMath::Vector<Dimension> o)
 {
