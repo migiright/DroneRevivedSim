@@ -1,12 +1,12 @@
 ﻿/**
 * \file MyMath.hpp
-* \version 1.3.1
+* \version 1.4
 */
 
 #pragma once
 
 #include <array>
-#include <iostream>
+#include <type_traits>
 #include <boost/format.hpp>
 #include <boost/operators.hpp>
 
@@ -23,6 +23,8 @@ class MatrixBase {};
 template<size_t H, size_t W>
 class Matrix
 	: MatrixBase
+	, boost::addable<Matrix<H, W>>
+	, boost::subtractable<Matrix<H, W>>
 	, boost::multipliable<Matrix<H, W>, double>
 {
 public:
@@ -49,6 +51,17 @@ public:
 	explicit Matrix(const Args &...args)
 		: v{args...}
 	{}
+
+	/// 代入演算子
+	Matrix<Height, Width> &operator=(const Matrix<Height, Width> &o) &
+	{
+		for (size_t r = 0; r < Height; r++) {
+			for (size_t c = 0; c < Width; c++) {
+				(*this)(r, c) = o(r, c);
+			}
+		}
+		return *this;
+	}
 
 	/// 要素を返す
 	double& operator()(size_t row, size_t column)
@@ -78,8 +91,30 @@ public:
 		return s;
 	}
 
+	/// 行列同士の加算
+	Matrix<Height, Width>& operator+=(const Matrix<Height, Width> &rhs) &
+	{
+		for (size_t r = 0; r < Height; r++) {
+			for (size_t c = 0; c < Width; c++) {
+				(*this)(r, c) += rhs(r, c);
+			}
+		}
+		return *this;
+	}
+
+	/// 行列同士の減算
+	Matrix<Height, Width>& operator-=(const Matrix<Height, Width> &rhs) &
+	{
+		for (size_t r = 0; r < Height; r++) {
+			for (size_t c = 0; c < Width; c++) {
+				(*this)(r, c) -= rhs(r, c);
+			}
+		}
+		return *this;
+	}
+
 	/// スカラとの乗算
-	Matrix<Height, Width>& operator*=(double rhs)
+	Matrix<Height, Width>& operator*=(double rhs) &
 	{
 		for (size_t r = 0; r < Height; ++r) {
 			for (size_t c = 0; c < Width; ++c) {
@@ -87,6 +122,18 @@ public:
 			}
 		}
 		return *this;
+	}
+
+	///　反数
+	Matrix<Height, Width> operator-()
+	{
+		Matrix<Height, Width> ret;
+		for (size_t r = 0; r < Height; r++) {
+			for (size_t c = 0; c < Width; c++) {
+				ret(r, c) = -(*this)(r, c);
+			}
+		}
+		return ret;
 	}
 
 };
@@ -143,6 +190,15 @@ struct Vector
 		: v{args...}
 	{}
 
+	/// 代入演算子
+	const Vector<Dimension> &operator=(const Vector &o) &
+	{
+		for (size_t i = 0; i < Dimension; i++) {
+			(*this)[i] = o[i];
+		}
+		return *this;
+	}
+
 	/// 要素を返す
 	double& operator[](unsigned index) { return v[index]; }
 
@@ -150,7 +206,7 @@ struct Vector
 	const double& operator[](unsigned index) const { return v[index]; }
 
 	/// 加算
-	Vector<D>& operator+=(const Vector<D>& rhs)
+	Vector<D>& operator+=(const Vector<D>& rhs) &
 	{
 		for (size_t i = 0; i < D; i++) {
 			v[i] += rhs[i];
@@ -159,7 +215,7 @@ struct Vector
 	}
 
 	/// 減算
-	Vector<D>& operator-=(const Vector<D>& rhs)
+	Vector<D>& operator-=(const Vector<D>& rhs) &
 	{
 		for (size_t i = 0; i < D; i++) {
 			v[i] -= rhs[i];
@@ -168,7 +224,7 @@ struct Vector
 	}
 
 	/// スカラとの乗算
-	Vector<D>& operator*=(double rhs)
+	Vector<D>& operator*=(double rhs) &
 	{
 		for (size_t i = 0; i < D; ++i) {
 			(*this)[i] *= rhs;
@@ -177,12 +233,21 @@ struct Vector
 	}
 
 	/// スカラでの除算
-	Vector<D>& operator/=(double rhs)
+	Vector<D>& operator/=(double rhs) &
 	{
 		for (size_t i = 0; i < D; ++i) {
 			(*this)[i] /= rhs;
 		}
 		return *this;
+	}
+
+	/// 反数
+	Vector<D> operator-() {
+		Vector<D> d;
+		for (size_t i = 0; i < D; i++) {
+			d[i] = -(*this)[i];
+		}
+		return d;
 	}
 
 	/// 整形して文字列として返す
@@ -252,27 +317,41 @@ inline double norm(double x)
 	return x;
 }
 
+/// Matrixから列を抜き出してVectorにする
+template<size_t Height, size_t Width>
+Vector<Height> pickColumn(const Matrix<Height, Width> &matrix, size_t columnIndex)
+{
+	Vector<Height> ret;
+	for (size_t r = 0; r < Height; r++) {
+		ret[r] = matrix(r, columnIndex);
+	}
+	return ret;
+}
+
+/// 行を抜き出してベクトルにする
+template<size_t Height, size_t Width>
+Vector<Width> pickRow(const Matrix<Height, Width> &matrix, size_t rowIndex)
+{
+	Vector<Width> ret;
+	for (size_t c = 0; c < Width; c++) {
+		ret[c] = matrix(rowIndex, c);
+	}
+	return ret;
+}
+
+/// 微分の微小変位
+constexpr double DefaultDisplacement = 1e-7;
+
 /// 1変数関数の微分
 template<class Function>
-auto differential(Function function, double variable)
+auto differential(Function function, double variable, double displacement = DefaultDisplacement)
 {
-	double h = 1e-6;
-	decltype(function(variable)) d;
-	for (size_t i = 0; i < 10; i++) {
-		auto f0 = function(variable - h);
-		d = function(variable + h) - f0;
-		int n;
-		frexp(norm(f0) / norm(d), &n);
-		if (20 <= n && n <= 22) return d / (2*h);
-		h = ldexp(h, n - 21);
-	}
-	std::cout << "differential not converged" << std::endl;
-	return d / (2*h);
+	return (function(variable + displacement) - function(variable - displacement)) / (2*displacement);
 }
 
 /// ベクトル値関数のヤコビ行列
 template<size_t VariableDimension, class Function>
-auto jacobianMatrix(Function function, Vector<VariableDimension> variable)
+auto jacobianMatrix(Function function, Vector<VariableDimension> variable, double displacement = DefaultDisplacement)
 {
 	constexpr size_t FunctionDimension = decltype(function(variable))::Dimension;
 	Matrix<FunctionDimension, VariableDimension> ret;
@@ -281,7 +360,7 @@ auto jacobianMatrix(Function function, Vector<VariableDimension> variable)
 			auto v = variable;
 			v[i] = x;
 			return function(v);
-		}, variable[i]);
+		}, variable[i], displacement);
 		for (size_t j = 0; j < FunctionDimension; j++) {
 			ret(j, i) = r[j];
 		}
@@ -291,7 +370,7 @@ auto jacobianMatrix(Function function, Vector<VariableDimension> variable)
 
 ///　スカラ値関数のヤコビ行列
 template<size_t VariableDimension, class Function>
-auto jacobianVector(Function function, Vector<VariableDimension> variable)
+auto jacobianVector(Function function, Vector<VariableDimension> variable, double displacement = DefaultDisplacement)
 {
 	Vector<VariableDimension> ret;
 	for (size_t i = 0; i < VariableDimension; i++) {
@@ -299,9 +378,31 @@ auto jacobianVector(Function function, Vector<VariableDimension> variable)
 			auto v = variable;
 			v[i] = x;
 			return function(v);
-		}, variable[i]);
+		}, variable[i], displacement);
 	}
 	return ret;
+}
+
+/// LfVのfがMatrixのときのLie微分
+template<size_t H, class F, class V, class C = std::enable_if_t<
+	std::is_base_of_v<MatrixBase, decltype(std::declval<F>()(MyMath::Vector<H>()))>>>
+	auto lie(F f, V v, const Vector<H> &variable)
+{
+	auto fr = f(variable);
+	Vector<fr.Width> ret;
+	for (size_t i = 0; i < ret.Dimension; i++) {
+		ret[i] = MyMath::differential([&](double x) { return v(variable + x*pickColumn(fr, i)); }, 0);
+	}
+	return ret;
+}
+
+/// LfVのfがVectorのときのLie微分
+template<size_t Dimension, class F, class V, class C = std::enable_if_t<
+	std::is_same_v<decltype(std::declval<F>()(MyMath::Vector<Dimension>())), Vector<Dimension>>>>
+	double lie(F f, V v, const Vector<Dimension> &variable)
+{
+	Vector<Dimension> fr = f(variable);
+	return MyMath::differential([&](double x) { return v(variable + x*fr); }, 0);
 }
 
 }
