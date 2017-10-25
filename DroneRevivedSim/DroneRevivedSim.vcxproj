@@ -141,6 +141,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Algorithms.hpp" />
+    <ClInclude Include="DroneSystem.hpp" />
     <ClInclude Include="Math2.hpp" />
     <ClInclude Include="MatlabUtility.hpp" />
     <ClInclude Include="MatlabUtilitySample.h" />
