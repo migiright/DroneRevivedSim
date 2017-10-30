@@ -85,18 +85,18 @@ inline std::tuple<MyMath::Vector<2>, double> staticClfRevived(const MyMath::Vect
 }
 
 inline std::tuple<MyMath::Vector<2>, MyMath::Vector<2>> calcInputFromClf(const MyMath::Vector<6> &state,
-	const MyMath::Vector<2> &initialMinimizingInput,
+	const double c, const MyMath::Vector<2> &initialMinimizingInput,
 	std::function<std::tuple<MyMath::Vector<2>, double>(const MyMath::Vector<6>&, const MyMath::Vector<2>&)> clf)
 {
 	MyMath::Vector<2> minInput = initialMinimizingInput;
-	auto c = [&](const MyMath::Vector<6> x) {
+	auto cl = [&](const MyMath::Vector<6> x) {
 		auto r = clf(x, minInput);
 		minInput = std::get<0>(r);
 		return std::get<1>(r);
 	};
-	auto lfv = MyMath::lie(f, c, state);
-	auto lgv = MyMath::lie(g, c, state);
-	auto input = -((lfv >= 0 ? 2*lfv : 0) / MyMath::dot(lgv, lgv) + 0.7) * lgv;
+	auto lfv = MyMath::lie(f, cl, state);
+	auto lgv = MyMath::lie(g, cl, state);
+	auto input = -((lfv >= 0 ? 2*lfv : 0) / MyMath::dot(lgv, lgv) + c) * lgv;
 	return std::make_tuple(minInput, input);
 }
 
@@ -104,9 +104,9 @@ inline std::tuple<MyMath::Vector<2>, MyMath::Vector<2>> calcInputFromClf(const M
  * \return 0: clfを最小にする入力, 1: 入力
  */
 inline std::tuple<MyMath::Vector<2>, MyMath::Vector<2>> calcInput(const MyMath::Vector<6> &state,
-	const MyMath::Matrix<8, 8> &p0, const MyMath::Vector<2> &initialMinimizingInput)
+	const double c, const MyMath::Matrix<8, 8> &p0, const MyMath::Vector<2> &initialMinimizingInput)
 {
-	return calcInputFromClf(state, initialMinimizingInput, [&](const MyMath::Vector<6> &x, const MyMath::Vector<2> &mi) {
+	return calcInputFromClf(state, c, initialMinimizingInput, [&](const MyMath::Vector<6> &x, const MyMath::Vector<2> &mi) {
 		return staticClf(x, p0, mi);
 	});
 }
@@ -115,9 +115,10 @@ inline std::tuple<MyMath::Vector<2>, MyMath::Vector<2>> calcInput(const MyMath::
 * \return 0: clfを最小にする入力, 1: 入力
 */
 inline std::tuple<MyMath::Vector<2>, MyMath::Vector<2>> calcInputRevived(const MyMath::Vector<6> &state,
-	const MyMath::Matrix<8, 8> &p0, const MyMath::Vector<2> &initialMinimizingInput, const MyMath::Vector<2> &constraint)
+	const double c, const MyMath::Matrix<8, 8> &p0,
+	const MyMath::Vector<2> &initialMinimizingInput, const MyMath::Vector<2> &constraint)
 {
-	return calcInputFromClf(state, initialMinimizingInput, [&](const MyMath::Vector<6> &x, const MyMath::Vector<2> &mi) {
+	return calcInputFromClf(state, c, initialMinimizingInput, [&](const MyMath::Vector<6> &x, const MyMath::Vector<2> &mi) {
 		return staticClfRevived(x, p0, mi, constraint);
 	});
 }
@@ -127,6 +128,7 @@ class DroneSystem : public System<6, 2>
 public:
 	explicit DroneSystem(
 		const MyMath::Vector<2> &constraint = MyMath::Vector<2>{},
+		double c = 0.7,
 		const MyMath::Matrix<8, 8> &p0 = MyMath::Matrix<8, 8>{
 		3.0, 4.0, 3.0, 1.0, 0.0, 0.0, 0.0, 0.0,
 		4.0, 10.0, 8.0, 3.0, 0.0, 0.0, 0.0, 0.0,
@@ -147,12 +149,14 @@ public:
 private:
 	MyMath::Matrix<8, 8> p0_;
 	MyMath::Vector<2> constraint_;
+	double c_;
 	MyMath::Vector<2> prevMinimizingInput_;
 };
 
-inline DroneSystem::DroneSystem(const MyMath::Vector<2> &constraint, const MyMath::Matrix<8, 8> &p0)
+inline DroneSystem::DroneSystem(const MyMath::Vector<2> &constraint, const double c, const MyMath::Matrix<8, 8> &p0)
 	: p0_(p0)
 	, constraint_(constraint)
+	, c_(c)
 	, prevMinimizingInput_(MyMath::Vector<2>{0.0, 0.0})
 {}
 
@@ -164,8 +168,8 @@ inline DroneSystem::State DroneSystem::f(const State &state, const Input &input)
 inline DroneSystem::Input DroneSystem::u(const State &state)
 {
 	auto a = revives()
-		? calcInputRevived(state, p0_, prevMinimizingInput_, constraint_)
-		: calcInput(state, p0_, prevMinimizingInput_);
+		? calcInputRevived(state, c_, p0_, prevMinimizingInput_, constraint_)
+		: calcInput(state, c_, p0_, prevMinimizingInput_);
 	prevMinimizingInput_ = std::get<0>(a);
 	return std::get<1>(a);
 }
