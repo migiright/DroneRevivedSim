@@ -29,41 +29,45 @@ public:
 	using Algorithm = Algorithm<System>;
 
 	Simulator(PSystem system, const typename System::State &initialState, Algorithm algorithm,
-		std::ostream *logStream = nullptr);
+		std::ostream *logStream = nullptr, bool records = true);
 	virtual ~Simulator(){}
 
 	std::ostream* logStream() const { return logger_.ostream(); }
 	std::ostream* logStream(std::ostream *ostream) { return logger_.ostream(ostream); }
+	bool records() const { return records_; }
+	bool records(bool records) { return records_ = records; }
 
 	void simulateStep();
 	void simulateTo(double time);
 	void simulateToConverge(double error);
 	const Data &data() const;
 
+protected:
+	void step();
+
 private:
 	PSystem system_;
 	Data data_;
 	Algorithm algorithm_;
 	Logger logger_;
+	bool records_;
 };
 
 template<class System>
-Simulator<System>::Simulator(PSystem system, const typename System::State &initialState, Algorithm algorithm,
-	std::ostream *logStream)
+Simulator<System>::Simulator(PSystem system, const typename System::State &initialState,
+	Algorithm algorithm, std::ostream *logStream, const bool records)
 	: system_(system)
 	, data_{Record{0, initialState, system->u(initialState)}}
 	, algorithm_(algorithm)
 	, logger_(logStream)
+	, records_(records)
 {	
 }
 
 template<class System>
 void Simulator<System>::simulateStep() {
-	auto &c = data_.back();
-	auto n = algorithm_(*system_, c.time, c.state);
-	n.state = system_->normalize(n.state);
-	c.input = n.input;
-	data_.push_back(n);
+	step();
+	if (!records()) data_.erase(std::prev(std::end(data_), 2));
 }
 
 template<class System>
@@ -86,9 +90,9 @@ void Simulator<System>::simulateToConverge(double error) {
 	logger_ << "simulate from " << data_.back().time 
 		<< " until state convergs to " << error << "." << std::endl;
 	auto pt = std::chrono::steady_clock::now();
-	if (std::size(data_) <= 1) simulateStep();
+	step();
 	auto c = data_.back();
-	auto p = *std::prev(std::prev(data_.end()));
+	auto p = *std::prev(std::end(data_), 2);
 	while(MyMath::norm((c.state - p.state)/(c.time - p.time)) > error) {
 		const auto ct = std::chrono::steady_clock::now();
 		if (ct - pt >= std::chrono::seconds(1)) {
@@ -99,11 +103,20 @@ void Simulator<System>::simulateToConverge(double error) {
 		simulateStep();
 		c = data_.back();
 	}
-	auto e = (c.state - p.state)/(c.time - p.time);
+	if(!records()) data_.erase(std::prev(std::end(data_), 2));
 	logger_ << "simulation finished." << std::endl;
 }
 
 template<class System>
 const typename Simulator<System>::Data &Simulator<System>::data() const {
 	return data_;
+}
+
+template<class System>
+void Simulator<System>::step() {
+	auto &c = data_.back();
+	auto n = algorithm_(*system_, c.time, c.state);
+	n.state = system_->normalize(n.state);
+	c.input = n.input;
+	data_.push_back(n);
 }
