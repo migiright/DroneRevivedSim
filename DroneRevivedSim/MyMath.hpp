@@ -1,6 +1,6 @@
 ﻿/**
 * \file MyMath.hpp
-* \version 1.4
+* \version 1.4.1
 */
 
 #pragma once
@@ -242,7 +242,7 @@ struct Vector
 	}
 
 	/// 反数
-	Vector<D> operator-() {
+	Vector<D> operator-() const {
 		Vector<D> d;
 		for (size_t i = 0; i < D; i++) {
 			d[i] = -(*this)[i];
@@ -251,7 +251,7 @@ struct Vector
 	}
 
 	/// 整形して文字列として返す
-	std::string toString()
+	std::string toString() const
 	{
 		std::string s;
 		for (size_t i = 0; i < D; ++i) {
