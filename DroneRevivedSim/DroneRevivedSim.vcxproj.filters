@@ -59,5 +59,8 @@
     <ClInclude Include="Logger.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="SystemPlotter.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
