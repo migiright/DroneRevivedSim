@@ -27,6 +27,8 @@ public:
 	using Record = Record<System>;
 	using Data = std::list<Record>;
 	using Algorithm = Algorithm<System>;
+	using State = typename System::State;
+	using Input = typename System::Input;
 
 	Simulator(PSystem system, const typename System::State &initialState, Algorithm algorithm,
 		std::ostream *logStream = nullptr, bool records = true);
