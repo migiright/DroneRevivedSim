@@ -1,6 +1,6 @@
 ﻿/**
 * \file MyMath.hpp
-* \version 1.4.1
+* \version 1.4.2
 */
 
 #pragma once
@@ -200,10 +200,10 @@ struct Vector
 	}
 
 	/// 要素を返す
-	double& operator[](unsigned index) { return v[index]; }
+	double& operator[](size_t index) { return v[index]; }
 
 	/// 要素を返す
-	const double& operator[](unsigned index) const { return v[index]; }
+	const double& operator[](size_t index) const { return v[index]; }
 
 	/// 加算
 	Vector<D>& operator+=(const Vector<D>& rhs) &
