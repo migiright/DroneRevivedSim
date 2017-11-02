@@ -70,8 +70,7 @@ void MatlabUtility::plot(const std::string &csvFileName, const std::string &titl
 			mFile_ << pl << "(" << ps.index() << ")." << p.first << " = " << p.second << ";\n";
 		}
 	}
-	mFile_<< "grid on\n"
-		<< "legend(";
+	mFile_ << "legend(";
 	for (size_t i = 0; i < V::Dimension - 2; i++) {
 		mFile_ << "'\\fontname{Times} \\fontsize{14} " << i+1 << "', ";
 	}
