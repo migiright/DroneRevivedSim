@@ -7,6 +7,7 @@
 #include <list>
 #include <chrono>
 #include "Logger.hpp"
+#include <cmath>
 
 template<class System>
 struct Record
@@ -31,13 +32,15 @@ public:
 	using Input = typename System::Input;
 
 	Simulator(PSystem system, const typename System::State &initialState, Algorithm algorithm,
-		std::ostream *logStream = nullptr, bool records = true);
+		std::ostream *logStream = nullptr, bool records = true, double recodringInterval = 0);
 	virtual ~Simulator(){}
 
 	std::ostream* logStream() const { return logger_.ostream(); }
 	std::ostream* logStream(std::ostream *ostream) { return logger_.ostream(ostream); }
 	bool records() const { return records_; }
 	bool records(bool records) { return records_ = records; }
+	double recordingInterval() const { return recordingInterval_; }
+	double recordingInterval(double recordingInterval) { return recordingInterval_ = recordingInterval; }
 	double currentTime() const { return currentTime_; }
 	const State& currentState() const { return currentState_; }
 
@@ -56,20 +59,24 @@ private:
 	Algorithm algorithm_;
 	Logger logger_;
 	bool records_;
+	double recordingInterval_;
 	double currentTime_;
 	State currentState_;
+	double recordedTime_;
 };
 
 template<class System>
 Simulator<System>::Simulator(PSystem system, const typename System::State &initialState,
-	Algorithm algorithm, std::ostream *logStream, const bool records)
+	Algorithm algorithm, std::ostream *logStream, const bool records, const double recordingInterval)
 	: system_(system)
 	, data_()
 	, algorithm_(algorithm)
 	, logger_(logStream)
 	, records_(records)
+	, recordingInterval_(recordingInterval)
 	, currentTime_(0)
 	, currentState_(initialState)
+	, recordedTime_(0)
 {	
 }
 
@@ -126,7 +133,12 @@ const typename Simulator<System>::Data &Simulator<System>::data() const {
 
 template<class System>
 void Simulator<System>::step(const Record &next) {
-	if (records()) data_.push_back(Record{currentTime_, currentState_, next.input});
+	if (records() && (data().size() == 0 || currentTime() - recordedTime_ >= recordingInterval())) {
+		data_.push_back(Record{currentTime_, currentState_, next.input});
+		if (recordingInterval() > 0) {
+			recordedTime_ += floor((currentTime_-recordedTime_)/recordingInterval()) * recordingInterval();
+		}
+	}
 	currentTime_ = next.time;
 	currentState_ = next.state;
 }
