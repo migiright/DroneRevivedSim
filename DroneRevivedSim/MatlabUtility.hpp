@@ -10,7 +10,7 @@ public:
 	explicit MatlabUtility(const std::string &mFilePath);
 
 	template<class ValueRange>
-	void plot(const std::string &csvFileName, const std::string &title, const ValueRange &v);
+	void plot(const std::string &csvFileName, const std::string &title, const ValueRange &valueRange);
 
 private:
 	std::ofstream mFile_;
