@@ -26,7 +26,9 @@ private:
 inline MatlabUtility::MatlabUtility(const std::string &mFilePath)
 	: mFile_(mFilePath, std::ios::trunc)
 	, numPlotted_(0)
-{}
+{
+	mFile_ << "clearvars\n" << std::endl;
+}
 
 template<class ValueRange, class EachLineProperties>
 void MatlabUtility::plot(const std::string &csvFileName, const std::string &title, const ValueRange &valueRange,
