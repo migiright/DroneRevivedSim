@@ -59,7 +59,7 @@ template<class System>
 Simulator<System>::Simulator(PSystem system, const typename System::State &initialState,
 	Algorithm algorithm, std::ostream *logStream, const bool records)
 	: system_(system)
-	, data_{Record{0, initialState, system->u(initialState)}}
+	, data_{Record{0, initialState, Input()}}
 	, algorithm_(algorithm)
 	, logger_(logStream)
 	, records_(records)
@@ -120,5 +120,6 @@ void Simulator<System>::step() {
 	auto n = algorithm_(*system_, c.time, c.state);
 	n.state = system_->normalize(n.state);
 	c.input = n.input;
+	n.input = Input();
 	data_.push_back(n);
 }
