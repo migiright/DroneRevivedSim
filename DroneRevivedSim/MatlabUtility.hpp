@@ -37,24 +37,25 @@ void MatlabUtility::plot(const std::string &csvFileName, const std::string &titl
 			for (size_t i = 1; i < V::Dimension; i++) {
 				csvFile << "," << v[i];
 			}
-			csvFile << endl;
+			csvFile << "\n";
 		}
 	}
 
 	++numPlotted_;
 	const string data = title + "_data";
-	mFile_ << "%% Plot " << title << endl
-		<< data << " = " << "csvread('" << csvFileName << "');" << endl
-		<< "figure(" << numPlotted_ << ");" << endl
+	mFile_ << "%% Plot " << title << "\n"
+		<< data << " = " << "csvread('" << csvFileName << "');\n"
+		<< "figure(" << numPlotted_ << ");\n"
 		<< "plot(";
 	for (size_t i = 1; i < V::Dimension - 1; i++) {
 		mFile_ << data << "(:, 1), " << data << "(:, " << i+1 << "), ";
 	}
-	mFile_ << data << "(:, 1), " << data << "(:, " << V::Dimension << "));" << endl
-		<< "grid on" << endl
+	mFile_ << data << "(:, 1), " << data << "(:, " << V::Dimension << "));\n"
+		<< "grid on\n"
 		<< "legend(";
 	for (size_t i = 0; i < V::Dimension - 2; i++) {
 		mFile_ << "'\\fontname{Times} \\fontsize{14} " << i+1 << "', ";
 	}
-	mFile_ << "'\\fontname{Times} \\fontsize{14} " << V::Dimension-1 << "');" << endl << endl;
+	mFile_ << "'\\fontname{Times} \\fontsize{14} " << V::Dimension-1 << "');\n\n";
+	mFile_ << flush;
 }
