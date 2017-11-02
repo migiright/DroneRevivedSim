@@ -20,6 +20,6 @@ auto calcMinimum(Function function, MyMath::Vector<Dimension> initial)
 	Simulator<System> simulator(system, initial, createRungeKutta<System>(1e-3), nullptr, false);
 	State error;
 	simulator.simulateToConverge(1e-7);
-	auto minx = simulator.data().back().state;
+	auto minx = simulator.currentState();
 	return std::make_tuple(minx, function(minx));
 }
