@@ -10,7 +10,7 @@ public:
 	explicit MatlabUtility(const std::string &mFilePath);
 
 	template<class ValueRange>
-	void plot(const std::string &csvFileName, const std::string &title, ValueRange v);
+	void plot(const std::string &csvFileName, const std::string &title, const ValueRange &v);
 
 private:
 	std::ofstream mFile_;
@@ -23,7 +23,7 @@ inline MatlabUtility::MatlabUtility(const std::string &mFilePath)
 {}
 
 template<class ValueRange>
-void MatlabUtility::plot(const std::string &csvFileName, const std::string &title, ValueRange valueRange)
+void MatlabUtility::plot(const std::string &csvFileName, const std::string &title, const ValueRange &valueRange)
 {
 	using namespace std;
 	using V = typename boost::range_value<ValueRange>::type;
