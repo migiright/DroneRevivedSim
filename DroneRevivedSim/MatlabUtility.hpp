@@ -12,15 +12,15 @@
 
 class MatlabUtility : boost::noncopyable_::noncopyable {
 public:
-	using LineProperties = std::map<std::string, std::string>;
+	using Properties = std::map<std::string, std::string>;
 
 	explicit MatlabUtility(const std::string &mFilePath);
 
 	struct PlotOptions {
-		LineProperties mWholeLineProperties;
-		std::vector<LineProperties> mEachLineProperties;
-		PlotOptions& wholeLineProperties(const LineProperties &p) { mWholeLineProperties = p; return *this; }
-		template<class R = std::initializer_list<LineProperties>> PlotOptions& eachLineProperties(const R &r);
+		Properties mWholeLineProperties;
+		std::vector<Properties> mEachLineProperties;
+		PlotOptions& wholeLineProperties(const Properties &p) { mWholeLineProperties = p; return *this; }
+		template<class R = std::initializer_list<Properties>> PlotOptions& eachLineProperties(const R &r);
 	};
 
 	template<class ValueRange>
@@ -35,9 +35,9 @@ private:
 template<class R>
 MatlabUtility::PlotOptions& MatlabUtility::PlotOptions::eachLineProperties(const R &r)
 {
-	static_assert(std::is_same_v<LineProperties, typename boost::range_value<R>::type>,
-		"eachLineProperties is not Range of MatlabUtility::LineProperties.");
-	mEachLineProperties = boost::copy_range<std::vector<LineProperties>>(r);
+	static_assert(std::is_same_v<Properties, typename boost::range_value<R>::type>,
+		"eachLineProperties is not Range of MatlabUtility::Properties.");
+	mEachLineProperties = boost::copy_range<std::vector<Properties>>(r);
 	return *this;
 }
 
