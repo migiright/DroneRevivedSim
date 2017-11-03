@@ -8,6 +8,10 @@
 #include <map>
 #include <initializer_list>
 #include <vector>
+#include <boost/variant.hpp>
+#include <boost/format.hpp>
+#include <assert.h>
+#include <type_traits>
 #include "MyMath.hpp"
 
 class MatlabUtility : boost::noncopyable_::noncopyable
@@ -19,10 +23,18 @@ public:
 
 	struct PlotOptions
 	{
+		PlotOptions();
 		Properties mWholeLineProperties;
 		std::vector<Properties> mEachLineProperties;
+		boost::variant<std::string, std::vector<std::string>> mLegend;
+		Properties mLegendProperties;
 		PlotOptions& wholeLineProperties(const Properties &p) { mWholeLineProperties = p; return *this; }
 		template<class R = std::initializer_list<Properties>> PlotOptions& eachLineProperties(const R &r);
+		PlotOptions& legend(const std::string &p) { mLegend = p; return *this; }
+		template<class R = std::initializer_list<std::string>,
+			class T = std::enable_if_t<std::is_same_v<std::string, typename boost::range_value<R>::type>>>
+		PlotOptions& legend(const R &legends);
+		PlotOptions& legendProperties(const Properties &p) { mLegendProperties = p; return *this; }
 	};
 
 	template<class ValueRange>
@@ -34,12 +46,26 @@ private:
 	int numPlotted_;
 };
 
+inline MatlabUtility::PlotOptions::PlotOptions()
+	: mWholeLineProperties()
+	, mEachLineProperties()
+	, mLegend("%d")
+{
+}
+
 template<class R>
 MatlabUtility::PlotOptions& MatlabUtility::PlotOptions::eachLineProperties(const R &r)
 {
 	static_assert(std::is_same_v<Properties, typename boost::range_value<R>::type>,
 		"eachLineProperties is not Range of MatlabUtility::Properties.");
 	mEachLineProperties = boost::copy_range<std::vector<Properties>>(r);
+	return *this;
+}
+
+template<class R, class T>
+MatlabUtility::PlotOptions& MatlabUtility::PlotOptions::legend(const R &legends)
+{
+	mLegend = boost::copy_range<std::vector<std::string>>(legends);
 	return *this;
 }
 
@@ -90,10 +116,34 @@ void MatlabUtility::plot(const std::string &csvFileName, const std::string &titl
 			mFile_ << pl << "(" << ps.index() << ")." << p.first << " = " << p.second << ";\n";
 		}
 	}
-	mFile_ << "legend(";
-	for (size_t i = 0; i < V::Dimension - 2; i++) {
-		mFile_ << "'\\fontname{Times} \\fontsize{14} " << i+1 << "', ";
+	mFile_ << "legend({'";
+	switch (options.mLegend.which()) {
+	case 0:
+		{
+			const auto &l = boost::get<string>(options.mLegend);
+			for (size_t i = 0; i < V::Dimension - 2; i++) {
+				mFile_ << boost::format(l) % (i+1) << "', '";
+			}
+			mFile_ << boost::format(l) % (V::Dimension-1);
+			break;
+		}
+	case 1:
+		{
+			const auto &ls = boost::get<vector<string>>(options.mLegend);
+			for (auto &l : boost::make_iterator_range(begin(ls), prev(end(ls)))) {
+				mFile_ << l << "', '";
+			}
+			mFile_ << ls.back();
+			break;
+		}
+	default:
+		assert(false && "options.mLegend contains unknown type.");
+		break;
 	}
-	mFile_ << "'\\fontname{Times} \\fontsize{14} " << V::Dimension-1 << "');\n\n";
+	mFile_ <<  "'}";
+	for (auto &p : options.mLegendProperties) {
+		mFile_ << ", '" << p.first << "', " << p.second;
+	}
+	mFile_ << ");\n\n";
 	mFile_ << flush;
 }

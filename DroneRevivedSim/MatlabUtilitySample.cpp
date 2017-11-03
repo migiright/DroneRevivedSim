@@ -21,5 +21,6 @@ void MatlabUtilitySample() {
 	mu.plot("result.csv", "plot", data,
 		MatlabUtility::PlotOptions()
 		.wholeLineProperties({{"LineWidth", "2"}})
-		.eachLineProperties({{{"Color", "[1 0 0]"}}, {{"Color", "[0 1 0]"}}}));
+		.eachLineProperties({{{"Color", "[1 0 0]"}}, {{"Color", "[0 1 0]"}}})
+		.legendProperties({{"FontSize", "20"}, {"FontName", "'Times New Roman'"}}));
 }
