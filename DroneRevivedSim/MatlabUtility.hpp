@@ -4,7 +4,7 @@
 #include <boost/core/noncopyable.hpp>
 #include <boost/range/value_type.hpp>
 #include <boost/range/adaptor/indexed.hpp>
-#include <boost/range/irange.hpp>
+#include <boost/range/iterator_range.hpp>
 #include <map>
 #include <initializer_list>
 #include <vector>
