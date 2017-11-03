@@ -25,5 +25,7 @@ void MatlabUtilitySample() {
 		.eachLineProperties({{{"Color", "[1 0 0]"}}, {{"Color", "[0 1 0]"}}})
 		.legendProperties({{"FontSize", "20"}, {"FontName", "'Times New Roman'"}})
 		.xlim(0, 5)
-		.ylim(-2, numeric_limits<double>::infinity()));
+		.ylim(-2, numeric_limits<double>::infinity())
+		.fontName("Times New Roman")
+		.fontSize(30));
 }

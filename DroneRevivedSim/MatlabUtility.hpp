@@ -31,6 +31,8 @@ public:
 		boost::variant<std::string, std::vector<std::string>> mLegend;
 		Properties mLegendProperties;
 		std::pair<double, double> mXlim, mYlim;
+		std::string mFontName;
+		double mFontSize;
 		PlotOptions& wholeLineProperties(const Properties &p) { mWholeLineProperties = p; return *this; }
 		template<class R = std::initializer_list<Properties>> PlotOptions& eachLineProperties(const R &r);
 		PlotOptions& legend(const std::string &p) { mLegend = p; return *this; }
@@ -40,6 +42,8 @@ public:
 		PlotOptions& legendProperties(const Properties &p) { mLegendProperties = p; return *this; }
 		PlotOptions& xlim(double xmin, double xmax) { mXlim = {xmin, xmax}; return *this; }
 		PlotOptions& ylim(double ymin, double ymax) { mYlim = {ymin, ymax}; return *this; }
+		PlotOptions& fontName(const std::string &p) { mFontName = p; return *this; }
+		PlotOptions& fontSize(double p) { mFontSize = p; return *this; }
 	};
 
 	template<class ValueRange>
@@ -57,6 +61,8 @@ inline MatlabUtility::PlotOptions::PlotOptions()
 	, mLegend("%d")
 	, mXlim(-std::numeric_limits<double>::infinity(), std::numeric_limits<double>::infinity())
 	, mYlim(-std::numeric_limits<double>::infinity(), std::numeric_limits<double>::infinity())
+	, mFontName()
+	, mFontSize()
 {
 }
 
@@ -158,6 +164,11 @@ void MatlabUtility::plot(const std::string &csvFileName, const std::string &titl
 	for (auto &p : options.mLegendProperties) {
 		mFile_ << ", '" << p.first << "', " << p.second;
 	}
-	mFile_ << ");\n\n";
+	mFile_ << ");\n";
+	const auto ax = title + "_ax";
+	mFile_ << ax << " = gca;\n";
+	if (!options.mFontName.empty()) mFile_ << ax << ".FontName = '" << options.mFontName << "';\n";
+	if (options.mFontSize > 0) mFile_ << ax << ".FontSize = " << options.mFontSize << ";\n";
+	mFile_ << "\n";
 	mFile_ << flush;
 }
