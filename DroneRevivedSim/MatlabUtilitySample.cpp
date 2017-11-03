@@ -18,5 +18,8 @@ void MatlabUtilitySample() {
 	}
 
 	MatlabUtility mu("result.m");
-	mu.plot("result.csv", "plot", data);
+	mu.plot("result.csv", "plot", data,
+		MatlabUtility::PlotOptions()
+		.wholeLineProperties({{"LineWidth", "2"}})
+		.eachLineProperties({{{"Color", "[1 0 0]"}}, {{"Color", "[0 1 0]"}}}));
 }
