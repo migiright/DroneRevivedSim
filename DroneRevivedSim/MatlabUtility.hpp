@@ -16,7 +16,7 @@ public:
 
 	template<class ValueRange, class EachLineProperties = std::initializer_list<LineProperties>>
 	void plot(const std::string &csvFileName, const std::string &title, const ValueRange &valueRange,
-		const LineProperties &wholeLineProperties = LineProperties(), const EachLineProperties &eachLineProperties = {});
+		const LineProperties &wholeLineProperties = {}, const EachLineProperties &eachLineProperties = {});
 
 private:
 	std::ofstream mFile_;
@@ -53,8 +53,8 @@ void MatlabUtility::plot(const std::string &csvFileName, const std::string &titl
 	}
 
 	++numPlotted_;
-	const string data = title + "_data";
-	const string pl = title + "_p";
+	const auto data = title + "_data";
+	const auto pl = title + "_p";
 	mFile_ << "%% Plot " << title << "\n"
 		<< data << " = " << "csvread('" << csvFileName << "');\n"
 		<< "figure(" << numPlotted_ << ");\n"
