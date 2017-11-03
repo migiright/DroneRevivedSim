@@ -27,5 +27,10 @@ void MatlabUtilitySample() {
 		.xlim(0, 5)
 		.ylim(-2, numeric_limits<double>::infinity())
 		.fontName("Times New Roman")
-		.fontSize(30));
+		.fontSize(30)
+		.size(8, 4)
+		.fileName("image")
+		.fileType("png")
+		.resolution(300)
+		.prints(true));
 }

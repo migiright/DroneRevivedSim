@@ -33,6 +33,11 @@ public:
 		std::pair<double, double> mXlim, mYlim;
 		std::string mFontName;
 		double mFontSize;
+		std::pair<double, double> mSize;
+		std::string mFileType;
+		std::string mFileName;
+		double mResolution;
+		bool mPrints;
 		PlotOptions& wholeLineProperties(const Properties &p) { mWholeLineProperties = p; return *this; }
 		template<class R = std::initializer_list<Properties>> PlotOptions& eachLineProperties(const R &r);
 		PlotOptions& legend(const std::string &p) { mLegend = p; return *this; }
@@ -44,6 +49,11 @@ public:
 		PlotOptions& ylim(double ymin, double ymax) { mYlim = {ymin, ymax}; return *this; }
 		PlotOptions& fontName(const std::string &p) { mFontName = p; return *this; }
 		PlotOptions& fontSize(double p) { mFontSize = p; return *this; }
+		PlotOptions& size(double width, double height) { mSize = {width, height}; return *this; }
+		PlotOptions& fileType(const std::string &p) { mFileType = p; return *this; }
+		PlotOptions& fileName(const std::string &p) { mFileName = p; return *this; }
+		PlotOptions& resolution(double p) { mResolution = p; return *this; }
+		PlotOptions& prints(bool p) { mPrints = p; return *this; }
 	};
 
 	template<class ValueRange>
@@ -63,6 +73,11 @@ inline MatlabUtility::PlotOptions::PlotOptions()
 	, mYlim(-std::numeric_limits<double>::infinity(), std::numeric_limits<double>::infinity())
 	, mFontName()
 	, mFontSize()
+	, mSize()
+	, mFileType()
+	, mFileName()
+	, mResolution()
+	, mPrints()
 {
 }
 
@@ -169,6 +184,22 @@ void MatlabUtility::plot(const std::string &csvFileName, const std::string &titl
 	mFile_ << ax << " = gca;\n";
 	if (!options.mFontName.empty()) mFile_ << ax << ".FontName = '" << options.mFontName << "';\n";
 	if (options.mFontSize > 0) mFile_ << ax << ".FontSize = " << options.mFontSize << ";\n";
+	const auto fig = title + "_fig";
+	mFile_ << fig << " = gcf;\n";
+	if (options.mSize != make_pair(0.0, 0.0)) {
+		mFile_ << fig << ".PaperUnits = 'centimeters';\n";
+		mFile_ << fig << ".PaperPosition = [0 0 " << options.mSize.first << " " << options.mSize.second << "];\n";
+	}
+	const auto figPos = fig + "_pos";
+	mFile_ << figPos << " = " << fig << ".PaperPosition;\n"
+		<< fig << ".PaperSize = " << "[" << figPos << "(3) " << figPos << "(4)];\n";
+	if(options.mPrints) {
+		const auto ft = options.mFileName.empty() ? title : options.mFileName;
+		mFile_ << "print('" << ft << "'";
+		if (!options.mFileType.empty()) mFile_ << ", '-d" << options.mFileType << "'";
+		mFile_ << ", '-r" << options.mResolution << "');\n";
+	}
+
 	mFile_ << "\n";
 	mFile_ << flush;
 }
