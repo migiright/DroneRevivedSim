@@ -2,6 +2,7 @@
 #include "MatlabUtility.hpp"
 #include <vector>
 #include "MyMath.hpp"
+#include <limits>
 
 using namespace std;
 
@@ -22,5 +23,7 @@ void MatlabUtilitySample() {
 		MatlabUtility::PlotOptions()
 		.wholeLineProperties({{"LineWidth", "2"}})
 		.eachLineProperties({{{"Color", "[1 0 0]"}}, {{"Color", "[0 1 0]"}}})
-		.legendProperties({{"FontSize", "20"}, {"FontName", "'Times New Roman'"}}));
+		.legendProperties({{"FontSize", "20"}, {"FontName", "'Times New Roman'"}})
+		.xlim(0, 5)
+		.ylim(-2, numeric_limits<double>::infinity()));
 }

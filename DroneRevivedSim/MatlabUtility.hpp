@@ -12,6 +12,8 @@
 #include <boost/format.hpp>
 #include <assert.h>
 #include <type_traits>
+#include <utility>
+#include <limits>
 #include "MyMath.hpp"
 
 class MatlabUtility : boost::noncopyable_::noncopyable
@@ -28,6 +30,7 @@ public:
 		std::vector<Properties> mEachLineProperties;
 		boost::variant<std::string, std::vector<std::string>> mLegend;
 		Properties mLegendProperties;
+		std::pair<double, double> mXlim, mYlim;
 		PlotOptions& wholeLineProperties(const Properties &p) { mWholeLineProperties = p; return *this; }
 		template<class R = std::initializer_list<Properties>> PlotOptions& eachLineProperties(const R &r);
 		PlotOptions& legend(const std::string &p) { mLegend = p; return *this; }
@@ -35,6 +38,8 @@ public:
 			class T = std::enable_if_t<std::is_same_v<std::string, typename boost::range_value<R>::type>>>
 		PlotOptions& legend(const R &legends);
 		PlotOptions& legendProperties(const Properties &p) { mLegendProperties = p; return *this; }
+		PlotOptions& xlim(double xmin, double xmax) { mXlim = {xmin, xmax}; return *this; }
+		PlotOptions& ylim(double ymin, double ymax) { mYlim = {ymin, ymax}; return *this; }
 	};
 
 	template<class ValueRange>
@@ -50,6 +55,8 @@ inline MatlabUtility::PlotOptions::PlotOptions()
 	: mWholeLineProperties()
 	, mEachLineProperties()
 	, mLegend("%d")
+	, mXlim(-std::numeric_limits<double>::infinity(), std::numeric_limits<double>::infinity())
+	, mYlim(-std::numeric_limits<double>::infinity(), std::numeric_limits<double>::infinity())
 {
 }
 
@@ -115,6 +122,13 @@ void MatlabUtility::plot(const std::string &csvFileName, const std::string &titl
 		for (const auto &p : ps.value()) {
 			mFile_ << pl << "(" << ps.index() << ")." << p.first << " = " << p.second << ";\n";
 		}
+	}
+	constexpr auto inf = numeric_limits<double>::infinity();
+	if(options.mXlim != make_pair(-inf, inf)) {
+		mFile_ << "xlim([" << options.mXlim.first << " " << options.mXlim.second << "]);\n";
+	}
+	if (options.mYlim != make_pair(-inf, inf)) {
+		mFile_ << "ylim([" << options.mYlim.first << " " << options.mYlim.second << "]);\n";
 	}
 	mFile_ << "legend({'";
 	switch (options.mLegend.which()) {
