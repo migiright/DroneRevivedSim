@@ -10,13 +10,15 @@
 #include <vector>
 #include "MyMath.hpp"
 
-class MatlabUtility : boost::noncopyable_::noncopyable {
+class MatlabUtility : boost::noncopyable_::noncopyable
+{
 public:
 	using Properties = std::map<std::string, std::string>;
 
 	explicit MatlabUtility(const std::string &mFilePath);
 
-	struct PlotOptions {
+	struct PlotOptions
+	{
 		Properties mWholeLineProperties;
 		std::vector<Properties> mEachLineProperties;
 		PlotOptions& wholeLineProperties(const Properties &p) { mWholeLineProperties = p; return *this; }
@@ -79,12 +81,12 @@ void MatlabUtility::plot(const std::string &csvFileName, const std::string &titl
 		mFile_ << data << "(:, 1), " << data << "(:, " << i+1 << "), ";
 	}
 	mFile_ << data << "(:, 1), " << data << "(:, " << V::Dimension << ")";
-	for(const auto &p : options.mWholeLineProperties) {
+	for (const auto &p : options.mWholeLineProperties) {
 		mFile_ << ", '" << p.first << "', " << p.second;
 	}
 	mFile_ << ");\n";
-	for(const auto &ps : options.mEachLineProperties | boost::adaptors::indexed(1)) {
-		for(const auto &p : ps.value()) {
+	for (const auto &ps : options.mEachLineProperties | boost::adaptors::indexed(1)) {
+		for (const auto &p : ps.value()) {
 			mFile_ << pl << "(" << ps.index() << ")." << p.first << " = " << p.second << ";\n";
 		}
 	}

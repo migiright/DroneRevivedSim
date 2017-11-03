@@ -7,7 +7,8 @@
 #include "MatlabUtility.hpp"
 
 template<class System>
-class SystemPlotter {
+class SystemPlotter
+{
 public:
 	using Simulator = Simulator<System>;
 	using Record = typename Simulator::Record;
@@ -18,7 +19,7 @@ public:
 
 	void plotInput(const std::string &csvFilePath = "input.csv", const std::string &title = "input");
 	void plotState(const std::string &csvFilePath = "state.csv", const std::string &title = "state");
-	
+
 private:
 	std::shared_ptr<MatlabUtility> matlabUtility_;
 	std::shared_ptr<Data> data_;
@@ -31,8 +32,7 @@ SystemPlotter<System>::SystemPlotter(const std::shared_ptr<MatlabUtility> matlab
 	: matlabUtility_(matlabUtility)
 	, data_(data)
 	, csvFilePathPrefix_(csvFilePathPrefix)
-{
-}
+{}
 
 template<class System>
 void SystemPlotter<System>::plotInput(const std::string &csvFilePath, const std::string &title)

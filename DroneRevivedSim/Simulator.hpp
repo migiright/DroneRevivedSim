@@ -77,8 +77,7 @@ Simulator<System>::Simulator(PSystem system, const typename System::State &initi
 	, currentTime_(0)
 	, currentState_(initialState)
 	, recordedTime_(0)
-{	
-}
+{}
 
 template<class System>
 typename Simulator<System>::Record Simulator<System>::calcNext()
@@ -89,17 +88,19 @@ typename Simulator<System>::Record Simulator<System>::calcNext()
 }
 
 template<class System>
-void Simulator<System>::simulateStep() {
+void Simulator<System>::simulateStep()
+{
 	step(calcNext());
 }
 
 template<class System>
-void Simulator<System>::simulateTo(double time) {
+void Simulator<System>::simulateTo(double time)
+{
 	logger_ << "simulate from " << currentTime() << " to " << time << "." << std::endl;
 	auto pt = std::chrono::steady_clock::now();
-	while(currentTime() < time) {
+	while (currentTime() < time) {
 		const auto ct = std::chrono::steady_clock::now();
-		if(ct - pt >= std::chrono::seconds(1)) {
+		if (ct - pt >= std::chrono::seconds(1)) {
 			logger_ << "simulated up to " << currentTime() << "." << std::endl;
 			pt = ct;
 		}
@@ -109,7 +110,8 @@ void Simulator<System>::simulateTo(double time) {
 }
 
 template<class System>
-void Simulator<System>::simulateToConverge(double error) {
+void Simulator<System>::simulateToConverge(double error)
+{
 	logger_ << "simulate from " << currentTime() << " until state convergs to " << error << "." << std::endl;
 	auto cpt = std::chrono::steady_clock::now();
 
@@ -127,12 +129,14 @@ void Simulator<System>::simulateToConverge(double error) {
 }
 
 template<class System>
-const typename Simulator<System>::Data &Simulator<System>::data() const {
+const typename Simulator<System>::Data &Simulator<System>::data() const
+{
 	return data_;
 }
 
 template<class System>
-void Simulator<System>::step(const Record &next) {
+void Simulator<System>::step(const Record &next)
+{
 	if (records() && (data().size() == 0 || currentTime() - recordedTime_ >= recordingInterval())) {
 		data_.push_back(Record{currentTime_, currentState_, next.input});
 		if (recordingInterval() > 0) {

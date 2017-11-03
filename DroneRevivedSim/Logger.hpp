@@ -3,7 +3,8 @@
 #include <ostream>
 #include <boost/noncopyable.hpp>
 
-class Logger : boost::noncopyable {
+class Logger : boost::noncopyable
+{
 public:
 	explicit Logger(std::ostream *ostream = nullptr);
 
@@ -15,7 +16,7 @@ public:
 	Logger& put(char ch);
 	Logger& write(const char *s, std::streamsize count);
 	Logger& flush();
-	
+
 private:
 	std::ostream *ostream_;
 };
@@ -31,17 +32,20 @@ Logger& Logger::operator<<(const T &param)
 	return *this;
 }
 
-inline Logger & Logger::operator<<(std::ostream &(*f)(std::ostream &)) {
+inline Logger & Logger::operator<<(std::ostream &(*f)(std::ostream &))
+{
 	if (ostream_) *ostream_ << f;
 	return *this;
 }
 
-inline Logger& Logger::put(char ch) {
+inline Logger& Logger::put(char ch)
+{
 	if (ostream_) ostream_->put(ch);
 	return *this;
 }
 
-inline Logger& Logger::write(const char *s, std::streamsize count) {
+inline Logger& Logger::write(const char *s, std::streamsize count)
+{
 	if (ostream_) ostream_->write(s, count);
 	return *this;
 }
