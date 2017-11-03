@@ -4,8 +4,10 @@
 #include <boost/core/noncopyable.hpp>
 #include <boost/range/value_type.hpp>
 #include <boost/range/adaptor/indexed.hpp>
+#include <boost/range/irange.hpp>
 #include <map>
 #include <initializer_list>
+#include <vector>
 #include "MyMath.hpp"
 
 class MatlabUtility : boost::noncopyable_::noncopyable {
@@ -14,14 +16,30 @@ public:
 
 	explicit MatlabUtility(const std::string &mFilePath);
 
-	template<class ValueRange, class EachLineProperties = std::initializer_list<LineProperties>>
+	struct PlotOptions {
+		LineProperties mWholeLineProperties;
+		std::vector<LineProperties> mEachLineProperties;
+		PlotOptions& wholeLineProperties(const LineProperties &p) { mWholeLineProperties = p; return *this; }
+		template<class R = std::initializer_list<LineProperties>> PlotOptions& eachLineProperties(const R &r);
+	};
+
+	template<class ValueRange>
 	void plot(const std::string &csvFileName, const std::string &title, const ValueRange &valueRange,
-		const LineProperties &wholeLineProperties = {}, const EachLineProperties &eachLineProperties = {});
+		const PlotOptions& options = {});
 
 private:
 	std::ofstream mFile_;
 	int numPlotted_;
 };
+
+template<class R>
+MatlabUtility::PlotOptions& MatlabUtility::PlotOptions::eachLineProperties(const R &r)
+{
+	static_assert(std::is_same_v<LineProperties, typename boost::range_value<R>::type>,
+		"eachLineProperties is not Range of MatlabUtility::LineProperties.");
+	mEachLineProperties = boost::copy_range<std::vector<LineProperties>>(r);
+	return *this;
+}
 
 inline MatlabUtility::MatlabUtility(const std::string &mFilePath)
 	: mFile_(mFilePath, std::ios::trunc)
@@ -30,16 +48,14 @@ inline MatlabUtility::MatlabUtility(const std::string &mFilePath)
 	mFile_ << "clearvars\n" << std::endl;
 }
 
-template<class ValueRange, class EachLineProperties>
-void MatlabUtility::plot(const std::string &csvFileName, const std::string &title, const ValueRange &valueRange,
-	const LineProperties &wholeLineProperties, const EachLineProperties &eachLineProperties)
+template<class ValueRange>
+void MatlabUtility::plot(const std::string &csvFileName, const std::string &title,
+	const ValueRange &valueRange, const PlotOptions& options)
 {
 	using namespace std;
 	using V = typename boost::range_value<ValueRange>::type;
 	static_assert(is_base_of_v<MyMath::VectorBase, typename boost::range_value<ValueRange>::type>,
 		"valueRange is not Range of MyMath::Vector.");
-	static_assert(is_same_v<LineProperties, typename boost::range_value<EachLineProperties>::type>,
-		"eachLineProperties is not Range of MatlabUtility::LineProperties.");
 
 	{
 		ofstream csvFile(csvFileName, ios::trunc);
@@ -63,11 +79,11 @@ void MatlabUtility::plot(const std::string &csvFileName, const std::string &titl
 		mFile_ << data << "(:, 1), " << data << "(:, " << i+1 << "), ";
 	}
 	mFile_ << data << "(:, 1), " << data << "(:, " << V::Dimension << ")";
-	for(const auto &p : wholeLineProperties) {
+	for(const auto &p : options.mWholeLineProperties) {
 		mFile_ << ", '" << p.first << "', " << p.second;
 	}
 	mFile_ << ");\n";
-	for(const auto &ps : eachLineProperties | boost::adaptors::indexed(1)) {
+	for(const auto &ps : options.mEachLineProperties | boost::adaptors::indexed(1)) {
 		for(const auto &p : ps.value()) {
 			mFile_ << pl << "(" << ps.index() << ")." << p.first << " = " << p.second << ";\n";
 		}
