@@ -263,3 +263,9 @@ __pycache__/
 # output file
 *.m
 *.csv
+
+# 自動生成された画像ファイル
+/DroneRevivedSim/*.png
+/DroneRevivedSim/*.eps
+/DroneRevivedSim/*.pdf
+/DroneRevivedSim/*.svg
