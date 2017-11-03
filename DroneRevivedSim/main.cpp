@@ -1,11 +1,6 @@
-#include <iostream>
-#include "Math2Sample.h"
+#include "MatlabUtilitySample.h"
 
-
-using namespace std;
-
-int main()
-{
-	calcMinimumSample();
+int main() {
+	MatlabUtilitySample();
 	return 0;
 }
