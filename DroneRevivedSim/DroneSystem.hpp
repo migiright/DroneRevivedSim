@@ -3,6 +3,7 @@
 #include <tuple>
 #include <cmath>
 #include <functional>
+#include <utility>
 #include "System.hpp"
 #include "Math2.hpp"
 
@@ -37,6 +38,17 @@ inline MyMath::Vector<8> dynamicExtend(const MyMath::Vector<6> &state, const MyM
 	};
 }
 
+inline MyMath::Matrix<4, 2> dynamicExtendInputJacobi(const MyMath::Vector<6> &state, const MyMath::Vector<2> &input)
+{
+	//1, 2, 5, 6行目は省略
+	return {
+		-sin(state[4]), 0.0,
+		-state[5]*cos(state[4]), -sin(state[4]),
+		cos(state[4]), 0.0,
+		-state[5]*sin(state[4]), cos(state[4]),
+	};
+}
+
 inline MyMath::Vector<8> systemRevive(const MyMath::Vector<8> &x, const MyMath::Vector<2> &c)
 {
 	const auto t1 = tan(Pi*x[0]/(2*c[0])), at1 = 1 + t1*t1,
@@ -53,9 +65,35 @@ inline MyMath::Vector<8> systemRevive(const MyMath::Vector<8> &x, const MyMath::
 	};
 }
 
+inline MyMath::Matrix<4, 4> systemReviveJacobi(const MyMath::Vector<8> &x, const MyMath::Vector<2> &c)
+{
+	//1, 2, 5, 6行目, 1, 2, 5, 6列目は省略
+	const auto t1 = tan(Pi*x[0]/(2*c[0])), at1 = 1 + t1*t1,
+		t2 = tan(Pi*x[4]/(2*c[1])), at2 = 1 + t2*t2;
+	return {
+		Pi*at1/(2*c[0]), 0.0, 0.0, 0.0,
+		3*Pi*Pi*t1*at1*x[1]/(2*c[0]*c[0]), Pi*at1/(2*c[0]), 0.0, 0.0,
+		0.0, 0.0, Pi*at2/(2*c[1]), 0.0,
+		0.0, 0.0, 3*Pi*Pi*t2*at2*x[5]/(2*c[1]*c[1]), Pi*at2/(2*c[1]),
+	};
+}
+
 inline double clfForExtension(const MyMath::Vector<8> &state, const MyMath::Matrix<8, 8> &p0)
 {
 	return dot(state * p0, state);
+}
+
+inline MyMath::Vector<4> clfForExtensionJacobi(const MyMath::Vector<8> &state, const MyMath::Matrix<8, 8> &p0)
+{
+	//1, 2, 5, 6列目は省略
+	constexpr std::pair<size_t, size_t> L[]{{0, 2}, {1, 3}, {2, 6}, {3, 7}};
+	MyMath::Vector<4> r;
+	for (auto &c : L) {
+		for (size_t i = 0; i < 8; i++) {
+			r[c.first] += state[i] * (p0(i, c.second) + p0(c.second, i));
+		}
+	}
+	return r;
 }
 
 inline double dynamicClf(const MyMath::Vector<6> &state, const MyMath::Vector<2> &input,
@@ -64,10 +102,24 @@ inline double dynamicClf(const MyMath::Vector<6> &state, const MyMath::Vector<2>
 	return clfForExtension(dynamicExtend(state, input), p0);
 }
 
+inline MyMath::Vector<2> dynamicClfInputJacobi(const MyMath::Vector<6> &state, const MyMath::Vector<2> &input,
+	const MyMath::Matrix<8, 8> &p0)
+{
+	return clfForExtensionJacobi(dynamicExtend(state, input), p0)*dynamicExtendInputJacobi(state, input);
+}
+
 inline double dynamicClfRevived(const MyMath::Vector<6> &state, const MyMath::Vector<2> &input,
 	const MyMath::Matrix<8, 8> &p0, const MyMath::Vector<2> constraint)
 {
 	return clfForExtension(systemRevive(dynamicExtend(state, input), constraint), p0);
+}
+
+inline MyMath::Vector<2> dynamicClfRevivedInputJacobi(const MyMath::Vector<6> &state, const MyMath::Vector<2> &input,
+	const MyMath::Matrix<8, 8> &p0, const MyMath::Vector<2> &constraint)
+{
+	const auto x = dynamicExtend(state, input);
+	return clfForExtensionJacobi(systemRevive(x, constraint), p0)
+		* systemReviveJacobi(x, constraint) * dynamicExtendInputJacobi(state, input);
 }
 
 inline std::tuple<MyMath::Vector<2>, double> staticClf(const MyMath::Vector<6> &state, const MyMath::Matrix<8, 8> p0,
@@ -81,6 +133,7 @@ inline std::tuple<MyMath::Vector<2>, double> staticClfRevived(const MyMath::Vect
 	const MyMath::Vector<2> &initialMinimizingInput, const MyMath::Vector<2> constraint)
 {
 	return calcMinimum([&](const MyMath::Vector<2> u) { return dynamicClfRevived(state, u, p0, constraint); },
+		[&](const MyMath::Vector<2> u) { return dynamicClfRevivedInputJacobi(state, u, p0, constraint); },
 		initialMinimizingInput);
 }
 
