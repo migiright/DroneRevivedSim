@@ -9,17 +9,25 @@
 
 constexpr double Pi = 3.14159265358979323846;
 
-template<size_t Dimension, class Function>
-auto calcMinimum(Function function, const MyMath::Vector<Dimension> &initial)
+template<size_t Dimension, class Function, class Jacobi>
+auto calcMinimum(Function function, Jacobi jacobi, const MyMath::Vector<Dimension> &initial)
 {
 	using State = MyMath::Vector<Dimension>;
 	using Input = MyMath::Vector<0>;
 	using System = CommonSystem<Dimension, 0>;
-	auto system = std::make_shared<System>([function](const State &s, const Input &) { return -MyMath::jacobianVector(function, s); },
+	auto system = std::make_shared<System>([jacobi](const State &s, const Input &) { return -jacobi(s); },
 		[](const State &s) { return Input{}; });
 	Simulator<System> simulator(system, initial, createRungeKutta<System>(1e-3), nullptr, false);
 	State error;
 	simulator.simulateToConverge(1e-7);
 	auto minx = simulator.currentState();
 	return std::make_tuple(minx, function(minx));
+}
+
+template<size_t Dimension, class Function>
+auto calcMinimum(Function function, const MyMath::Vector<Dimension> &initial)
+{
+	return calcMinimum(function,
+		[function](const MyMath::Vector<Dimension> &s) { return MyMath::jacobianVector(function, s); },
+		initial);
 }
