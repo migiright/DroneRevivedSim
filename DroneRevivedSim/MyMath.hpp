@@ -1,6 +1,6 @@
 ﻿/**
 * \file MyMath.hpp
-* \version 1.4.2
+* \version 1.4.3
 */
 
 #pragma once
@@ -48,7 +48,7 @@ public:
 	* \param args 初期化する値。1行1列, ... , 1行Width列, 2行1列, ... の順
 	*/
 	template<class ...Args>
-	explicit Matrix(const Args &...args)
+	Matrix(const Args &...args)
 		: v{args...}
 	{}
 
@@ -186,7 +186,7 @@ struct Vector
 
 	/// 初期値を指定する
 	template<class ...Args>
-	explicit Vector(const Args &...args)
+	Vector(const Args &...args)
 		: v{args...}
 	{}
 
