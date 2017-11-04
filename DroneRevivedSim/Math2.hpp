@@ -10,7 +10,7 @@
 constexpr double Pi = 3.14159265358979323846;
 
 template<size_t Dimension, class Function>
-auto calcMinimum(Function function, MyMath::Vector<Dimension> initial)
+auto calcMinimum(Function function, const MyMath::Vector<Dimension> &initial)
 {
 	using State = MyMath::Vector<Dimension>;
 	using Input = MyMath::Vector<0>;
