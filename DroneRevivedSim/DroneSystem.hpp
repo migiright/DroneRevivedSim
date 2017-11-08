@@ -125,16 +125,20 @@ inline MyMath::Vector<2> dynamicClfRevivedInputJacobi(const MyMath::Vector<6> &s
 inline std::tuple<MyMath::Vector<2>, double> staticClf(const MyMath::Vector<6> &state, const MyMath::Matrix<8, 8> p0,
 	const MyMath::Vector<2> &initialMinimizingInput)
 {
-	return calcMinimum([&](const MyMath::Vector<2> u) { return dynamicClf(state, u, p0); },
-		initialMinimizingInput);
+	auto x = calcMinimumByCg([&](const MyMath::Vector<2> u) {
+		return dynamicClfInputJacobi(state, u, p0);
+	}, initialMinimizingInput);
+	return {x, dynamicClf(state, x, p0)};
 }
 
 inline std::tuple<MyMath::Vector<2>, double> staticClfRevived(const MyMath::Vector<6> &state, const MyMath::Matrix<8, 8> p0,
 	const MyMath::Vector<2> &initialMinimizingInput, const MyMath::Vector<2> constraint)
 {
-	return calcMinimum([&](const MyMath::Vector<2> u) { return dynamicClfRevived(state, u, p0, constraint); },
-		[&](const MyMath::Vector<2> u) { return dynamicClfRevivedInputJacobi(state, u, p0, constraint); },
-		initialMinimizingInput);
+	auto x = calcMinimumByCg([&](const MyMath::Vector<2> u) {
+		return dynamicClfRevivedInputJacobi(state, u, p0, constraint);
+	}, initialMinimizingInput);
+	return {x, dynamicClfRevived(state, x, p0, constraint)};
+
 }
 
 inline std::tuple<MyMath::Vector<2>, MyMath::Vector<2>> calcInputFromClf(const MyMath::Vector<6> &state,
