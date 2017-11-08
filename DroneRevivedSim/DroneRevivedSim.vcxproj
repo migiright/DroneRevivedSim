@@ -136,6 +136,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Math2Sample.cpp" />
     <ClCompile Include="MatlabUtilitySample.cpp" />
     <ClCompile Include="TestSystemSample.cpp" />
   </ItemGroup>
@@ -144,6 +145,7 @@
     <ClInclude Include="DroneSystem.hpp" />
     <ClInclude Include="Logger.hpp" />
     <ClInclude Include="Math2.hpp" />
+    <ClInclude Include="Math2Sample.h" />
     <ClInclude Include="MatlabUtility.hpp" />
     <ClInclude Include="MatlabUtilitySample.h" />
     <ClInclude Include="MyMath.hpp" />

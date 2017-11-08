@@ -9,6 +9,20 @@
 
 constexpr double Pi = 3.14159265358979323846;
 
+template<class Function>
+double solve(Function function, double x0, double x1, double error)
+{
+	double f0 = function(x0), f1 = function(x1);
+	while (abs(f1) > error) {
+		const auto t0 = x0;
+		x0 = x1;
+		x1 -= f1 * (x1-t0)/(f1-f0);
+		f0 = f1;
+		f1 = function(x1);
+	}
+	return x1;
+}
+
 template<size_t Dimension, class Function, class Jacobi>
 auto calcMinimum(Function function, Jacobi jacobi, const MyMath::Vector<Dimension> &initial)
 {
@@ -30,4 +44,21 @@ auto calcMinimum(Function function, const MyMath::Vector<Dimension> &initial)
 	return calcMinimum(function,
 		[function](const MyMath::Vector<Dimension> &s) { return MyMath::jacobianVector(function, s); },
 		initial);
+}
+
+template<size_t Dimension, class Jacobi>
+auto calcMinimumByCg(Jacobi jacobi, const MyMath::Vector<Dimension> &initial, double initialH = 1e-7, double error = 1e-5)
+{
+	auto x = initial;
+	const auto g0 = jacobi(x);
+	auto png = dot(g0, g0);
+	auto p = -g0;
+	while (png > error*error) {
+		x = x + p*solve([&](double a) { return dot(p, jacobi(x + a*p)); }, 0, initialH, error*error);
+		const auto g = jacobi(x);
+		const auto cng = dot(g, g);
+		p = -g + cng / png * p;
+		png = cng;
+	}
+	return x;
 }
