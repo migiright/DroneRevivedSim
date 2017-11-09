@@ -14,6 +14,7 @@
 #include <type_traits>
 #include <utility>
 #include <limits>
+#include <iomanip>
 #include "MyMath.hpp"
 
 class MatlabUtility : boost::noncopyable_::noncopyable
@@ -115,6 +116,7 @@ void MatlabUtility::plot(const std::string &csvFileName, const std::string &titl
 
 	{
 		ofstream csvFile(csvFileName, ios::trunc);
+		csvFile << scientific << setprecision(8);
 		for (const auto &v : valueRange) {
 			csvFile << v[0];
 			for (size_t i = 1; i < V::Dimension; i++) {
