@@ -233,9 +233,7 @@ inline DroneSystem::Input DroneSystem::u(const State &state)
 
 inline DroneSystem::State DroneSystem::normalize(const State &state)
 {
-	auto r = state;
-	r[4] = fmod(fmod(state[4]+Pi, Pi*2) + Pi*2, Pi*2) - Pi;
-	return r;
+	return state;
 }
 
 inline bool DroneSystem::revives() const
