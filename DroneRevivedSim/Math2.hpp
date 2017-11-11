@@ -62,3 +62,12 @@ auto calcMinimumByCg(Jacobi jacobi, const MyMath::Vector<Dimension> &initial, do
 	}
 	return x;
 }
+
+template<size_t Dimension>
+bool isfinite(const MyMath::Vector<Dimension> &x)
+{
+	for (size_t i = 0; i < Dimension; i++) {
+		if (!std::isfinite(x[i])) return false;
+	}
+	return true;
+}
