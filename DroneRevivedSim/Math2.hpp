@@ -6,6 +6,7 @@
 #include "Simulator.hpp"
 #include "Algorithms.hpp"
 #include <iostream>
+#include <numeric>
 
 constexpr double Pi = 3.14159265358979323846;
 
@@ -13,12 +14,17 @@ template<class Function>
 double solve(Function function, double x0, double x1, double error)
 {
 	double f0 = function(x0), f1 = function(x1);
+	int k = 0;
 	while (abs(f1) > error) {
 		const auto t0 = x0;
 		x0 = x1;
 		x1 -= f1 * (x1-t0)/(f1-f0);
 		f0 = f1;
 		f1 = function(x1);
+		++k;
+		if(k >= 100) {
+			return std::numeric_limits<double>::quiet_NaN();
+		}
 	}
 	return x1;
 }
