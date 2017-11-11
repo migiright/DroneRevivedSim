@@ -17,8 +17,10 @@ public:
 	SystemPlotter(std::shared_ptr<MatlabUtility> matlabUtility, std::shared_ptr<Data> data,
 		const std::string &csvFilePathPrefix = "");
 
-	void plotInput(const std::string &csvFilePath = "input.csv", const std::string &title = "input");
-	void plotState(const std::string &csvFilePath = "state.csv", const std::string &title = "state");
+	void plotInput(const MatlabUtility::PlotOptions &options,
+		const std::string &csvFilePath = "input.csv", const std::string &title = "input");
+	void plotState(const MatlabUtility::PlotOptions &options,
+		const std::string &csvFilePath = "state.csv", const std::string &title = "state");
 
 private:
 	std::shared_ptr<MatlabUtility> matlabUtility_;
@@ -35,7 +37,8 @@ SystemPlotter<System>::SystemPlotter(const std::shared_ptr<MatlabUtility> matlab
 {}
 
 template<class System>
-void SystemPlotter<System>::plotInput(const std::string &csvFilePath, const std::string &title)
+void SystemPlotter<System>::plotInput(const MatlabUtility::PlotOptions &options,
+	const std::string &csvFilePath, const std::string &title)
 {
 	matlabUtility_->plot(csvFilePathPrefix_ + csvFilePath, title, *data_
 		| boost::adaptors::transformed([](const Record &r) {
@@ -45,11 +48,12 @@ void SystemPlotter<System>::plotInput(const std::string &csvFilePath, const std:
 			ret[i+1] = r.input[i];
 		}
 		return ret;
-	}));
+	}), options);
 }
 
 template<class System>
-void SystemPlotter<System>::plotState(const std::string &csvFilePath, const std::string &title)
+void SystemPlotter<System>::plotState(const MatlabUtility::PlotOptions &options,
+	const std::string &csvFilePath, const std::string &title)
 {
 	matlabUtility_->plot(csvFilePathPrefix_ + csvFilePath, title, *data_
 		| boost::adaptors::transformed([](const Record &r) {
@@ -59,5 +63,5 @@ void SystemPlotter<System>::plotState(const std::string &csvFilePath, const std:
 			ret[i+1] = r.state[i];
 		}
 		return ret;
-	}));
+	}), options);
 }
