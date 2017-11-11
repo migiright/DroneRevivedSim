@@ -84,6 +84,7 @@ typename Simulator<System>::Record Simulator<System>::calcNext()
 {
 	auto n = algorithm_(*system_, currentTime_, currentState_);
 	n.state = system_->normalize(n.state);
+	if (!isfinite(n.state) || !isfinite(n.input)) logger_ << "nan of Inf emerged." << std::endl;
 	return n;
 }
 
@@ -105,6 +106,10 @@ void Simulator<System>::simulateTo(double time)
 			pt = ct;
 		}
 		simulateStep();
+		if (!isfinite(currentState_)) {
+			logger_ << "simulation aborted." << std::endl;
+			return;
+		}
 	}
 	logger_ << "simulation finished." << std::endl;
 }
@@ -124,6 +129,10 @@ void Simulator<System>::simulateToConverge(double error)
 		auto n = calcNext();
 		if (MyMath::norm(n.state - currentState())/(n.time - currentTime()) <= error) break;
 		step(n);
+		if (!isfinite(currentState_)) {
+			logger_ << "simulation aborted." << std::endl;
+			return;
+		}
 	}
 	logger_ << "simulation finished." << std::endl;
 }
